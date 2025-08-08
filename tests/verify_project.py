@@ -40,16 +40,16 @@ class ProjectVerifier:
             "imagegeneration_final.py", 
             "image_upscaling.py",
             "imagegeneration_schedulers.py",
-            "requirements.txt",
-            "install_dependencies.sh",
-            "fix_dependencies.sh", 
-            "Dockerfile",
-            "docker-compose.yml",
-            "deploy.sh",
-            "run_local.sh",
-            "start_studio.sh",
-            "test_api.py",
-            "README.md"
+            "config/requirements.txt",
+            "scripts/install_dependencies.sh",
+            "scripts/fix_dependencies.sh", 
+            "docker/Dockerfile",
+            "docker/docker-compose.yml",
+            "scripts/deploy.sh",
+            "scripts/run_local.sh",
+            "scripts/start_studio.sh",
+            "tests/test_api.py",
+            "docs/README.md"
         ]
         
         for file in required_files:
@@ -68,11 +68,11 @@ class ProjectVerifier:
             "imagegeneration_final.py",
             "image_upscaling.py", 
             "imagegeneration_schedulers.py",
-            "example_usage.py",
-            "test_api.py",
-            "comprehensive_upscaling_example.py",
-            "scheduler_examples.py",
-            "upscaling_example.py"
+            "examples/example_usage.py",
+            "tests/test_api.py",
+            "examples/comprehensive_upscaling_example.py",
+            "examples/scheduler_examples.py",
+            "examples/upscaling_example.py"
         ]
         
         for file in python_files:
@@ -95,7 +95,7 @@ class ProjectVerifier:
         print("\n🐳 Checking Docker Configuration...")
         
         # Check Dockerfile
-        dockerfile_path = self.project_dir / "Dockerfile"
+        dockerfile_path = self.project_dir / "docker" / "Dockerfile"
         if dockerfile_path.exists():
             with open(dockerfile_path, 'r') as f:
                 content = f.read()
@@ -115,6 +115,16 @@ class ProjectVerifier:
             else:
                 self.log_warning("Dockerfile doesn't set Python 3.12 as default")
                 
+            if "python3.12 -m venv" in content:
+                self.log_success("Dockerfile creates Python 3.12 virtual environment")
+            else:
+                self.log_warning("Dockerfile doesn't create Python virtual environment")
+                
+            if "VIRTUAL_ENV" in content:
+                self.log_success("Dockerfile configures virtual environment")
+            else:
+                self.log_warning("Dockerfile doesn't configure virtual environment")
+                
             if "start_studio.sh" in content or "streamlit" in content:
                 self.log_success("Dockerfile configured for Streamlit UI")
             else:
@@ -131,7 +141,7 @@ class ProjectVerifier:
                 self.log_warning("Dockerfile doesn't expose port 8501")
         
         # Check docker-compose.yml
-        compose_path = self.project_dir / "docker-compose.yml"
+        compose_path = self.project_dir / "docker" / "docker-compose.yml"
         if compose_path.exists():
             try:
                 import yaml
@@ -164,7 +174,7 @@ class ProjectVerifier:
         """Check requirements.txt."""
         print("\n📦 Checking Requirements...")
         
-        req_path = self.project_dir / "requirements.txt"
+        req_path = self.project_dir / "config" / "requirements.txt"
         if req_path.exists():
             with open(req_path, 'r') as f:
                 requirements = f.read()
@@ -190,7 +200,7 @@ class ProjectVerifier:
         """Check if scripts are executable."""
         print("\n🔧 Checking Script Permissions...")
         
-        scripts = ["deploy.sh", "start.sh", "test_api.py"]
+        scripts = ["scripts/deploy.sh", "scripts/start.sh", "tests/test_api.py"]
         
         for script in scripts:
             script_path = self.project_dir / script
@@ -320,12 +330,35 @@ class ProjectVerifier:
                 self.log_warning("Missing NVIDIA GPU environment variables")
         
         # Check if troubleshooting script exists
-        troubleshoot_script = self.project_dir / "docker_troubleshoot.sh"
+        troubleshoot_script = self.project_dir / "scripts" / "docker_troubleshoot.sh"
         if troubleshoot_script.exists():
             self.log_success("Docker troubleshooting script available")
         else:
             self.log_warning("Docker troubleshooting script not found")
     
+    def check_virtual_environment_support(self):
+        """Check if startup scripts properly support virtual environment."""
+        print("\n🐍 Checking Virtual Environment Support...")
+        
+        startup_scripts = ["scripts/start_studio.sh", "scripts/run_local.sh", "scripts/install_dependencies.sh"]
+        
+        for script_name in startup_scripts:
+            script_path = self.project_dir / script_name
+            if script_path.exists():
+                with open(script_path, 'r') as f:
+                    content = f.read()
+                
+                if "VIRTUAL_ENV" in content or "/opt/venv" in content:
+                    self.log_success(f"{script_name} has virtual environment support")
+                else:
+                    self.log_warning(f"{script_name} doesn't check for virtual environment")
+                    
+                if script_name == "install_dependencies.sh":
+                    if "$PIP_CMD" in content or "$VIRTUAL_ENV/bin/pip" in content:
+                        self.log_success(f"{script_name} uses virtual environment pip")
+                    else:
+                        self.log_warning(f"{script_name} doesn't use virtual environment pip")
+
     def run_verification(self):
         """Run all verification checks."""
         print("🔍 Project Verification Starting...")
@@ -337,9 +370,11 @@ class ProjectVerifier:
         self.check_docker_image_availability()
         self.check_requirements()
         self.check_scripts_executable()
+        self.check_virtual_environment_support()
         self.check_api_endpoints()
         self.check_swagger_ui()
         self.check_output_directories()
+        self.check_virtual_environment_support()
         
         print("\n" + "=" * 50)
         print("📋 VERIFICATION SUMMARY")

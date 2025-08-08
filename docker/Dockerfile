@@ -17,8 +17,6 @@ RUN apt-get update && \
         python3.12 \
         python3.12-dev \
         python3.12-venv \
-        #python3.12-distutils \
-        python3-pip \
         git \
         wget \
         curl \
@@ -35,21 +33,24 @@ RUN apt-get update && \
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
 
-# Install pip for Python 3.12
-RUN python3.12 -m ensurepip --upgrade && \
-    python3.12 -m pip install --upgrade pip setuptools wheel
+# Create Python 3.12 virtual environment
+RUN python3.12 -m venv /opt/venv
+
+# Activate virtual environment and upgrade pip
+RUN /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel
+
+# Set environment variables to use the virtual environment
+ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv"
 
 # Set workdir
 WORKDIR /app
 
-# Copy requirements and installation scripts
-COPY requirements.txt /app/
-COPY install_dependencies.sh /app/
+# Copy requirements file
+COPY config/requirements.txt /app/
 
-# Install Python dependencies with conflict resolution
-RUN chmod +x /app/install_dependencies.sh && \
-    python3 -m pip install --upgrade pip setuptools wheel && \
-    python3 -m pip install -r requirements.txt || /app/install_dependencies.sh
+# Install Python dependencies in virtual environment
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all application files
 COPY . /app
@@ -66,4 +67,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run both FastAPI and Streamlit services
-CMD ["./start_studio.sh"]
+CMD ["./scripts/start_studio.sh"]

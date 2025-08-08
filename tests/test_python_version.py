@@ -9,11 +9,19 @@ Run this inside the Docker container to verify the setup.
 import sys
 import platform
 import subprocess
+import os
 
 def test_python_version():
     """Test Python version and configuration."""
     print("🐍 Python Version Test")
     print("=" * 50)
+    
+    # Check if we're in a virtual environment
+    venv_path = os.environ.get('VIRTUAL_ENV')
+    if venv_path:
+        print(f"🌐 Virtual Environment: {venv_path}")
+    else:
+        print("🌐 Virtual Environment: Not detected")
     
     # Check Python version
     version = sys.version_info
@@ -40,7 +48,8 @@ def test_python_version():
         'fastapi',
         'uvicorn',
         'PIL',
-        'requests'
+        'requests',
+        'streamlit'
     ]
     
     for package in test_packages:
@@ -58,6 +67,16 @@ def test_python_version():
         print(f"\nPip Version: {result.stdout.strip()}")
     except Exception as e:
         print(f"❌ Error checking pip version: {e}")
+    
+    # Test PyTorch CUDA availability
+    try:
+        import torch
+        print(f"\n🔥 PyTorch CUDA Available: {torch.cuda.is_available()}")
+        if torch.cuda.is_available():
+            print(f"🔥 CUDA Device Count: {torch.cuda.device_count()}")
+            print(f"🔥 CUDA Device Name: {torch.cuda.get_device_name(0)}")
+    except:
+        print("⚠️  Could not check CUDA availability")
     
     print("\n🎉 All Python 3.12 tests passed!")
     return True

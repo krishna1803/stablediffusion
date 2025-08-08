@@ -8,6 +8,22 @@ set -e
 echo "🚀 Starting Stable Diffusion Studio (Local Development)"
 echo "======================================================"
 
+# Check for virtual environment and activate if available
+if [ -d "venv" ]; then
+    echo "🐍 Activating local virtual environment..."
+    source venv/bin/activate
+    echo "✅ Local virtual environment activated: $(which python)"
+elif [ -d "/opt/venv" ]; then
+    echo "🐍 Activating container virtual environment..."
+    source /opt/venv/bin/activate
+    export PATH="/opt/venv/bin:$PATH"
+    echo "✅ Container virtual environment activated: $(which python)"
+elif [ -n "$VIRTUAL_ENV" ]; then
+    echo "🐍 Using existing virtual environment: $VIRTUAL_ENV"
+else
+    echo "ℹ️  No virtual environment detected, using system Python"
+fi
+
 # Check if Python dependencies are installed
 check_dependencies() {
     echo "🔍 Checking dependencies..."
@@ -15,7 +31,11 @@ check_dependencies() {
     # Check if required packages are installed
     python3 -c "import fastapi, uvicorn, streamlit, requests, PIL" 2>/dev/null || {
         echo "❌ Missing dependencies. Installing..."
-        pip3 install -r requirements.txt
+        if [ -n "$VIRTUAL_ENV" ]; then
+            pip install -r config/requirements.txt
+        else
+            pip3 install -r config/requirements.txt
+        fi
     }
     
     echo "✅ Dependencies OK"

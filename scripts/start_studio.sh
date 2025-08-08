@@ -8,6 +8,14 @@ set -e
 echo "🚀 Starting Stable Diffusion Studio"
 echo "==================================="
 
+# Activate virtual environment if it exists (for Docker)
+if [ -d "/opt/venv" ]; then
+    echo "🐍 Activating Python virtual environment..."
+    source /opt/venv/bin/activate
+    export PATH="/opt/venv/bin:$PATH"
+    echo "✅ Virtual environment activated: $(which python)"
+fi
+
 # Function to check if port is in use
 check_port() {
     local port=$1

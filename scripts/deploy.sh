@@ -42,7 +42,7 @@ build_image() {
     echo "Building Docker image: $IMAGE_NAME"
     
     # Try building with the main Dockerfile
-    if docker build -t $IMAGE_NAME . 2>&1; then
+    if docker build -f docker/Dockerfile -t $IMAGE_NAME . 2>&1; then
         echo "✓ Docker image built successfully"
         return 0
     else
@@ -60,7 +60,7 @@ build_image() {
             echo "   3. NVIDIA CUDA image availability"
             echo ""
             echo "💡 Quick fixes:"
-            echo "   • Try: docker build --no-cache -t $IMAGE_NAME ."
+            echo "   • Try: docker build --no-cache -f docker/Dockerfile -t $IMAGE_NAME ."
             echo "   • Or edit Dockerfile to use: FROM nvidia/cuda:11.8-runtime-ubuntu22.04"
             echo "   • See DOCKER_BUILD_FIX.md for detailed solutions"
             
@@ -72,7 +72,7 @@ build_image() {
 # Function to run with docker-compose (recommended)
 run_with_compose() {
     echo "Starting with docker-compose..."
-    docker-compose up -d
+    docker-compose -f docker/docker-compose.yml up -d
     echo "✓ Service started with docker-compose"
     echo ""
     echo "🎉 Stable Diffusion Studio is ready!"
@@ -119,8 +119,8 @@ run_with_docker() {
 
 # Function to show logs
 show_logs() {
-    if command -v docker-compose &> /dev/null && [ -f "docker-compose.yml" ]; then
-        docker-compose logs -f
+    if command -v docker-compose &> /dev/null && [ -f "docker/docker-compose.yml" ]; then
+        docker-compose -f docker/docker-compose.yml logs -f
     else
         docker logs -f $CONTAINER_NAME
     fi
@@ -128,9 +128,9 @@ show_logs() {
 
 # Function to stop the service
 stop_service() {
-    if command -v docker-compose &> /dev/null && [ -f "docker-compose.yml" ]; then
+    if command -v docker-compose &> /dev/null && [ -f "docker/docker-compose.yml" ]; then
         echo "Stopping docker-compose services..."
-        docker-compose down
+        docker-compose -f docker/docker-compose.yml down
     else
         echo "Stopping Docker container..."
         docker stop $CONTAINER_NAME 2>/dev/null || true
@@ -185,7 +185,7 @@ case "${1:-}" in
     "start")
         check_docker
         check_nvidia_docker
-        if command -v docker-compose &> /dev/null && [ -f "docker-compose.yml" ]; then
+        if command -v docker-compose &> /dev/null && [ -f "docker/docker-compose.yml" ]; then
             run_with_compose
         else
             build_image
@@ -204,7 +204,7 @@ case "${1:-}" in
     "restart")
         stop_service
         sleep 2
-        if command -v docker-compose &> /dev/null && [ -f "docker-compose.yml" ]; then
+        if command -v docker-compose &> /dev/null && [ -f "docker/docker-compose.yml" ]; then
             run_with_compose
         else
             run_with_docker
@@ -214,7 +214,7 @@ case "${1:-}" in
         check_docker
         check_nvidia_docker
         build_image
-        if command -v docker-compose &> /dev/null && [ -f "docker-compose.yml" ]; then
+        if command -v docker-compose &> /dev/null && [ -f "docker/docker-compose.yml" ]; then
             run_with_compose
         else
             run_with_docker

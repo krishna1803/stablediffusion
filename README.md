@@ -1,728 +1,124 @@
-# Stable Diffusion FastAPI Service
+# Stable Diffusion Studio
 
-This project provides a comprehensive FastAPI web service for generating images using Stable Diffusion models. The service automatically selects the appropriate model based on available GPU memory and provides multiple upscaling options.
+A robust GPU-enabled Stable Diffusion service with FastAPI backend and Streamlit frontend, deployed via Docker with complete dependency isolation using Python 3.12 virtual environment.
 
-## Features
-
-### 🎨 **Streamlit Web Interface** (NEW!)
-- **User-Friendly UI**: Beautiful web interface for all features
-- **Real-Time Preview**: See generated images instantly
-- **Interactive Controls**: Sliders, dropdowns, and forms
-- **Gallery Management**: Browse and download all your creations
-- **Side-by-Side Comparisons**: Compare different schedulers visually
-
-### 🤖 **AI-Powered Image Generation**
-- **Automatic Model Selection**: Chooses the best Stable Diffusion model based on GPU memory:
-  - ≤ 24 GB: Stable Diffusion 2.1
-  - 24-48 GB: Stable Diffusion 3.5 Medium
-  - \> 48 GB: Stable Diffusion 3.5 Large
-- **Multiple Upscaling Methods**: 
-  - Single image upscaling (4x)
-  - Directory batch upscaling
-  - High-resolution upscaling (4x/8x)
-- **Scheduler Testing**: Compare 17+ different schedulers
-
-### 🛠️ **Developer-Friendly**
-- **RESTful API**: Easy-to-use REST endpoints
-- **Swagger UI**: Interactive API documentation
-- **Docker Support**: Containerized deployment
-- **Python 3.12**: Latest Python with optimized performance
-- **Comprehensive Testing**: Built-in test suite
-
-## Quick Start (Docker - Recommended)
-
-### Prerequisites
-
-- NVIDIA GPU with CUDA support
-- Docker with NVIDIA Container Toolkit
-- At least 8GB GPU memory (16GB+ recommended)
-
-### Technical Specifications
-
-- **Base Image**: `nvidia/cuda:12.2.0-runtime-ubuntu22.04`
-- **Python Version**: Python 3.12 (installed via deadsnakes PPA)
-- **CUDA Support**: CUDA 12.2 runtime
-- **GPU Memory**: Automatic model selection based on available VRAM
-- **Container Port**: 8000 (FastAPI + Swagger UI)
-
-### One-Command Deployment
+## 🚀 Quick Start
 
 ```bash
-# Full deployment (build, start, test)
-./deploy.sh deploy
+# Clone and navigate to project
+cd stablediffusion
+
+# Deploy with Docker (Recommended)
+./scripts/deploy.sh
+
+# Or run locally
+./scripts/run_local.sh
 ```
 
-### Manual Docker Steps
+## 🌐 Access Services
 
-```bash
-# 1. Build and start with docker-compose (includes Streamlit UI)
-docker-compose up -d
+- **Streamlit UI**: http://localhost:8501 (Main Interface)
+- **FastAPI Backend**: http://localhost:8000 
+- **Swagger API Docs**: http://localhost:8000/docs
 
-# 2. Or build and run with Docker directly
-docker build -t stable-diffusion-studio .
-docker run --gpus all -p 8000:8000 -p 8501:8501 -v $(pwd)/final_outputs:/app/final_outputs stable-diffusion-studio
+## 📁 Project Structure
 
-# 3. Access the services
-# Streamlit UI: http://localhost:8501 (recommended)
-# FastAPI + Swagger: http://localhost:8000/docs
-
-# 4. Test the deployment
-python3 test_api.py
-
-# 5. Test Python 3.12 configuration (optional)
-docker exec -it <container_name> python3 test_python_version.py
+```
+├── 📱 Main Services
+│   ├── fastapi_service.py          # FastAPI backend with all endpoints
+│   ├── streamlit_app.py            # Streamlit frontend interface
+│   ├── imagegeneration_final.py    # Core image generation logic
+│   ├── image_upscaling.py          # Image upscaling functionality
+│   └── imagegeneration_schedulers.py # Scheduler management
+├── 🐳 Docker & Deployment
+│   ├── docker/
+│   │   ├── Dockerfile              # Main container definition
+│   │   ├── docker-compose.yml      # Multi-service orchestration
+│   │   └── Dockerfile.alternative  # Backup configuration
+│   └── scripts/
+│       ├── deploy.sh               # Main deployment script
+│       ├── start_studio.sh         # Service startup
+│       ├── run_local.sh            # Local development
+│       └── install_dependencies.sh # Dependency management
+├── 📚 Documentation
+│   ├── docs/
+│   │   ├── README.md               # Comprehensive guide
+│   │   ├── IMPLEMENTATION_SUMMARY.md
+│   │   ├── VIRTUAL_ENVIRONMENT_SOLUTION.md
+│   │   ├── DOCKER_BUILD_FIX.md
+│   │   ├── STREAMLIT_GUIDE.md
+│   │   ├── SWAGGER_UI_GUIDE.md
+│   │   └── DEPENDENCY_TROUBLESHOOTING.md
+├── 🧪 Testing & Examples
+│   ├── tests/
+│   │   ├── verify_project.py       # Project validation
+│   │   ├── test_api.py            # API testing
+│   │   └── test_venv_build.sh     # Docker build testing
+│   └── examples/
+│       ├── example_usage.py        # Usage examples
+│       ├── upscaling_example.py    # Upscaling demos
+│       └── scheduler_examples.py   # Scheduler demos
+├── ⚙️ Configuration
+│   └── config/
+│       ├── requirements.txt        # Python dependencies
+│       ├── requirements_clean.txt  # Minimal dependencies
+│       └── environment.yaml        # Conda environment
+└── 📂 Output Directories
+    ├── final_outputs/              # Generated images
+    ├── upscaled_outputs/           # Upscaled images
+    └── scheduler_outputs/          # Scheduler test results
 ```
 
-### Local Development (No Docker)
+## ✨ Key Features
 
-```bash
-# Start both services locally
-./run_local.sh
+- **🎨 Image Generation**: Stable Diffusion with multiple models and schedulers
+- **📈 Image Upscaling**: High-quality upscaling with Real-ESRGAN
+- **🔧 Scheduler Testing**: Compare different sampling schedulers
+- **🌐 Dual Interface**: Both API and web UI access
+- **🐳 Docker Deployment**: GPU-enabled containerized deployment
+- **🐍 Virtual Environment**: Isolated Python 3.12 environment
+- **📊 Comprehensive Testing**: Full test suite and validation
 
-# Or manually:
-python3 fastapi_service.py &  # Backend on port 8000
-streamlit run streamlit_app.py  # Frontend on port 8501
-```
+## 📖 Documentation
 
-## Installation Options
+For detailed information, please see the comprehensive documentation in the [`docs/`](docs/) folder:
 
-### Option 1: Docker Deployment (Recommended)
+- **[Complete README](docs/README.md)** - Full project documentation
+- **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical overview
+- **[Virtual Environment Solution](docs/VIRTUAL_ENVIRONMENT_SOLUTION.md)** - Dependency isolation approach
+- **[Docker Build Guide](docs/DOCKER_BUILD_FIX.md)** - Container setup and troubleshooting
+- **[Streamlit Guide](docs/STREAMLIT_GUIDE.md)** - Web interface usage
+- **[API Documentation](docs/SWAGGER_UI_GUIDE.md)** - REST API reference
 
-1. **Install Prerequisites:**
-   - [Docker](https://docs.docker.com/get-docker/)
-   - [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+## 🔧 Requirements
 
-2. **Deploy the Service:**
-   ```bash
-   # Clone the repository
-   git clone <repository-url>
-   cd stablediffusion
-   
-   # Deploy with all features
-   ./deploy.sh deploy
-   ```
+- **Docker** with NVIDIA Container Toolkit (for GPU support)
+- **NVIDIA GPU** with CUDA support (recommended)
+- **Python 3.12+** (for local development)
 
-3. **Access the API:**
-   - API: http://localhost:8000
-   - Interactive Docs: http://localhost:8000/docs
-
-### Option 2: Local Installation
-
-1. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Start the Service:**
-   ```bash
-   python fastapi_service.py
-   ```
-
-## API Endpoints
-
-### Image Generation
-
-#### Generate Image
-**POST** `/generate`
-
-```json
-{
-    "prompt": "a beautiful sunset over mountains, digital art",
-    "negative_prompt": "blurry, low quality, ugly",
-    "num_inference_steps": 50,
-    "guidance_scale": 7.0,
-    "height": 1024,
-    "width": 1024,
-    "upscale": false,
-    "upscale_prompt": "enhance details"
-}
-```
-
-### Upscaling
-
-#### Single Image Upscaling
-**POST** `/upscale`
-
-```json
-{
-    "input_file": "image.png",
-    "prompt": "enhance details, improve quality",
-    "num_inference_steps": 75,
-    "guidance_scale": 7.5
-}
-```
-
-#### Directory Upscaling
-**POST** `/upscale-directory`
-
-```json
-{
-    "input_directory": "path/to/images",
-    "prompt": "improve quality",
-    "file_extensions": [".png", ".jpg"],
-    "num_inference_steps": 50
-}
-```
-
-#### High-Resolution Upscaling
-**POST** `/upscale-highres`
-
-```json
-{
-    "input_file": "image.png",
-    "prompt": "ultra high resolution",
-    "use_swinir": true,
-    "sd_steps": 75
-}
-```
-
-### Scheduler Testing
-
-#### Test Multiple Schedulers
-**POST** `/test-schedulers`
-
-```json
-{
-    "prompt": "test image for comparison",
-    "schedulers_to_test": ["EulerDiscrete", "DDIM", "DPMSolverMultistep"],
-    "num_inference_steps": 30
-}
-```
-
-#### List Available Schedulers
-**GET** `/schedulers`
-
-### Utility
-
-#### Download Generated Image
-**GET** `/download/{filename}`
-
-#### Health Check
-**GET** `/health`
-
-#### API Documentation
-**GET** `/docs` - Interactive Swagger UI
-
-## Deployment Commands
-
-### Using deploy.sh Script
+## 🚀 Quick Commands
 
 ```bash
 # Full deployment
-./deploy.sh deploy
-
-# Individual commands
-./deploy.sh build      # Build Docker image
-./deploy.sh start      # Start service
-./deploy.sh stop       # Stop service
-./deploy.sh restart    # Restart service
-./deploy.sh logs       # View logs
-./deploy.sh test       # Run tests
-```
-
-### Using Docker Compose
-
-```bash
-# Start services
-docker-compose up -d
+./scripts/deploy.sh
 
 # View logs
-docker-compose logs -f
+./scripts/deploy.sh logs
 
 # Stop services
-docker-compose down
+./scripts/deploy.sh stop
 
-# Rebuild and restart
-docker-compose up -d --build
+# Run tests
+python tests/verify_project.py
+
+# Local development
+./scripts/run_local.sh
 ```
 
-### Using Docker Directly
+## 📝 License
 
-```bash
-# Build image
-docker build -t stable-diffusion-api .
+This project is open source. See individual components for specific licensing.
 
-# Run with GPU support and volume mounts
-docker run -d \
-  --name stable-diffusion-api \
-  --gpus all \
-  -p 8000:8000 \
-  -v $(pwd)/final_outputs:/app/final_outputs \
-  -v $(pwd)/upscaled_outputs:/app/upscaled_outputs \
-  stable-diffusion-api
+---
 
-# View logs
-docker logs -f stable-diffusion-api
-
-# Stop container
-docker stop stable-diffusion-api
-```
-
-## Testing
-
-### Automated Testing
-
-```bash
-# Test local deployment
-python3 test_api.py
-
-# Test remote deployment
-python3 test_api.py http://your-server:8000
-```
-
-### Manual Testing
-
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Generate image
-curl -X POST "http://localhost:8000/generate" \
-     -H "Content-Type: application/json" \
-     -d '{"prompt": "a test image", "num_inference_steps": 20}'
-
-# List schedulers
-curl http://localhost:8000/schedulers
-```
-
-### Interactive Testing
-
-Visit http://localhost:8000/docs for the interactive Swagger UI where you can test all endpoints.
-
-## 🎨 Testing with Swagger UI (Recommended)
-
-Your FastAPI service includes interactive API documentation with Swagger UI - **the easiest way to test your API**!
-
-### Quick Start
-```bash
-# Deploy and open testing interface
-./quick_test.sh
-
-# Or manually:
-./deploy.sh deploy
-# Then open: http://localhost:8000/docs
-```
-
-### Interactive Testing
-- **Swagger UI**: http://localhost:8000/docs - Interactive API testing
-- **ReDoc**: http://localhost:8000/redoc - Alternative documentation
-- **Testing Helper**: `python3 swagger_tester.py` - Menu-driven testing
-
-### Why Use Swagger UI?
-✅ **Visual Interface** - No need to write curl commands  
-✅ **Live Testing** - Execute API calls directly from the browser  
-✅ **Schema Validation** - See parameter types and constraints  
-✅ **Real-time Responses** - View results immediately  
-✅ **File Downloads** - Download generated images directly  
-✅ **Copy Curl Commands** - Get curl equivalents for your code  
-
-See [SWAGGER_UI_GUIDE.md](SWAGGER_UI_GUIDE.md) for detailed usage instructions.
-
-## Configuration
-
-### Environment Variables
-
-```bash
-# GPU configuration
-NVIDIA_VISIBLE_DEVICES=0    # Specify GPU
-CUDA_VISIBLE_DEVICES=0      # CUDA GPU selection
-
-# Python configuration
-PYTHONUNBUFFERED=1          # Unbuffered output
-```
-
-### Volume Mounts
-
-The Docker setup includes these volume mounts:
-- `/app/final_outputs` - Generated images
-- `/app/upscaled_outputs` - Upscaled images
-- `/app/scheduler_outputs` - Scheduler comparison images
-
-### Model Selection Logic
-
-The service automatically detects GPU memory:
-
-- **≤ 24 GB**: Stable Diffusion 2.1 (`stabilityai/stable-diffusion-2-1`)
-- **24-48 GB**: Stable Diffusion 3.5 Medium (`stabilityai/stable-diffusion-3.5-medium`)
-- **> 48 GB**: Stable Diffusion 3.5 Large (`stabilityai/stable-diffusion-3.5-large`)
-
-## Troubleshooting
-
-### Common Issues
-
-1. **CUDA/GPU Issues:**
-   ```bash
-   # Check NVIDIA Docker runtime
-   docker info | grep nvidia
-   
-   # Test GPU access
-   docker run --rm --gpus all nvidia/cuda:11.8-base-ubuntu22.04 nvidia-smi
-   ```
-
-2. **Memory Issues:**
-   ```bash
-   # Check GPU memory
-   nvidia-smi
-   
-   # Reduce image size or inference steps
-   # Use smaller model for lower memory
-   ```
-
-3. **Port Conflicts:**
-   ```bash
-   # Change port in docker-compose.yml or use different port
-   docker run -p 8001:8000 stable-diffusion-api
-   ```
-
-4. **Permission Issues:**
-   ```bash
-   # Fix volume permissions
-   sudo chown -R $USER:$USER final_outputs upscaled_outputs scheduler_outputs
-   ```
-
-### Logs and Debugging
-
-```bash
-# View container logs
-docker logs stable-diffusion-api
-
-# View docker-compose logs
-docker-compose logs -f
-
-# Check container status
-docker ps
-docker stats stable-diffusion-api
-```
-
-## Performance Optimization
-
-### For Better Performance:
-- Use SSD storage for model caching
-- Increase shared memory: `--shm-size=2g`
-- Use multiple GPUs: modify docker-compose.yml
-- Optimize inference steps based on quality needs
-
-### For Lower Memory Usage:
-- Reduce image dimensions
-- Use fewer inference steps
-- Enable model offloading in code
-- Use float16 precision
-
-## Development
-
-### Local Development
-
-```bash
-# Install development dependencies
-pip install -r requirements.txt
-
-# Run service locally
-python fastapi_service.py
-
-# Run individual modules
-python imagegeneration_final.py "test prompt" output.png
-python image_upscaling.py input.png "enhance details"
-python imagegeneration_schedulers.py "test prompt"
-```
-
-### Adding New Features
-
-1. Modify the appropriate module (`imagegeneration_final.py`, `image_upscaling.py`, etc.)
-2. Update FastAPI endpoints in `fastapi_service.py`
-3. Add tests to `test_api.py`
-4. Update documentation in `README.md`
-
-## Requirements
-
-- Python 3.8+
-- CUDA-capable GPU (8GB+ recommended)
-- Docker with NVIDIA Container Toolkit
-- See `requirements.txt` for Python dependencies
-
-## Files Structure
-
-```
-├── fastapi_service.py              # Main FastAPI service
-├── imagegeneration_final.py        # Core image generation
-├── image_upscaling.py              # Comprehensive upscaling
-├── imagegeneration_schedulers.py   # Scheduler testing
-├── deploy.sh                       # Deployment script
-├── test_api.py                     # Comprehensive test suite
-├── docker-compose.yml              # Docker Compose configuration
-├── Dockerfile                      # Docker image definition
-├── requirements.txt                # Python dependencies
-├── example_usage.py                # Usage examples
-├── comprehensive_upscaling_example.py  # Upscaling examples
-└── README.md                       # This documentation
-```
-
-## License
-
-[Add your license information here]
-
-## Support
-
-For issues and questions:
-1. Check the troubleshooting section
-2. View logs for error details
-3. Test with the provided test suite
-4. Create an issue with detailed error information
-
-## Installation
-
-### Option 1: Local Installation
-
-1. Install the required dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-2. Ensure you have CUDA-capable GPU with appropriate drivers installed.
-
-### Option 2: Docker Installation
-
-1. Build the Docker image:
-```bash
-docker build -t stable-diffusion-api .
-```
-
-2. Run with Docker Compose (recommended):
-```bash
-docker-compose up -d
-```
-
-Or run directly with Docker:
-```bash
-docker run --gpus all -p 8000:8000 -v $(pwd)/final_outputs:/app/final_outputs stable-diffusion-api
-```
-
-### Prerequisites
-
-- NVIDIA GPU with CUDA support
-- Docker with NVIDIA Container Toolkit (for Docker installation)
-- At least 8GB GPU memory (16GB+ recommended)
-
-## Usage
-
-### Starting the FastAPI Server
-
-```bash
-python fastapi_service.py
-```
-
-The server will start on `http://localhost:8000` by default.
-
-### API Endpoints
-
-#### 1. Generate Image
-**POST** `/generate`
-
-Generate an image using Stable Diffusion.
-
-**Request Body:**
-```json
-{
-    "prompt": "a beautiful sunset over mountains, digital art",
-    "negative_prompt": "blurry, low quality, ugly, bad anatomy",
-    "num_inference_steps": 50,
-    "guidance_scale": 7.0,
-    "height": 1024,
-    "width": 1024,
-    "output_dir": "final_outputs"
-}
-```
-
-**Response:**
-```json
-{
-    "message": "Image generated successfully",
-    "output_path": "final_outputs/uuid-filename.png",
-    "filename": "uuid-filename.png"
-}
-```
-
-#### 2. Download Image
-**GET** `/download/{filename}`
-
-Download a generated image by filename.
-
-#### 3. Health Check
-**GET** `/health`
-
-Check if the service is running.
-
-#### 4. API Documentation
-**GET** `/docs`
-
-Interactive API documentation (Swagger UI).
-
-### Command Line Usage
-
-You can still use the script directly from command line:
-
-```bash
-python imagegeneration_final.py "a beautiful landscape" "output.png"
-```
-
-### Python API Usage
-
-Import and use the functions directly in your Python code:
-
-```python
-from imagegeneration_final import generate_image, initialize_pipeline
-
-# Initialize the pipeline (optional - will be done automatically)
-initialize_pipeline()
-
-# Generate an image
-output_path = generate_image(
-    prompt="a beautiful sunset over mountains",
-    output_file="sunset.png",
-    num_inference_steps=50,
-    guidance_scale=7.0
-)
-print(f"Image saved to: {output_path}")
-```
-
-### Using the API with Python Requests
-
-```python
-import requests
-
-# Generate an image
-response = requests.post("http://localhost:8000/generate", json={
-    "prompt": "a futuristic city with flying cars",
-    "num_inference_steps": 30,
-    "guidance_scale": 7.5
-})
-
-if response.status_code == 200:
-    result = response.json()
-    print(f"Generated: {result['filename']}")
-    
-    # Download the image
-    download_response = requests.get(f"http://localhost:8000/download/{result['filename']}")
-    with open(f"downloaded_{result['filename']}", "wb") as f:
-        f.write(download_response.content)
-```
-
-## Configuration
-
-### Model Selection Logic
-
-The service automatically detects GPU memory and selects the appropriate model:
-
-- **Stable Diffusion 2.1** (≤ 24 GB GPU memory)
-  - Model: `stabilityai/stable-diffusion-2-1`
-  - Pipeline: `StableDiffusionPipeline`
-  - Precision: `float16`
-
-- **Stable Diffusion 3.5 Medium** (24-48 GB GPU memory)
-  - Model: `stabilityai/stable-diffusion-3.5-medium`
-  - Pipeline: `StableDiffusion3Pipeline`
-  - Precision: `bfloat16`
-
-- **Stable Diffusion 3.5 Large** (> 48 GB GPU memory)
-  - Model: `stabilityai/stable-diffusion-3.5-large`
-  - Pipeline: `StableDiffusion3Pipeline`
-  - Precision: `bfloat16`
-
-### Parameters
-
-- **prompt**: Text description of the image to generate
-- **negative_prompt**: Text describing what to avoid in the image
-- **num_inference_steps**: Number of denoising steps (1-100)
-- **guidance_scale**: How closely to follow the prompt (1.0-20.0)
-- **height/width**: Image dimensions (256-2048 pixels)
-- **output_dir**: Directory to save generated images
-
-## Example Usage Script
-
-Run the example script to test the API:
-
-```bash
-python example_usage.py
-```
-
-This script demonstrates:
-- Health check
-- Image generation with different parameters
-- Image download
-
-## Error Handling
-
-The service includes comprehensive error handling:
-- CUDA availability checks
-- GPU memory detection
-- Model loading validation
-- Generation error handling
-- File system error handling
-
-## Requirements
-
-- Python 3.8+
-- CUDA-capable GPU
-- PyTorch with CUDA support
-- See `requirements.txt` for complete dependency list
-
-## Files
-
-- `imagegeneration_final.py`: Core image generation functions
-- `fastapi_service.py`: FastAPI web service
-- `example_usage.py`: Example usage script
-- `requirements.txt`: Python dependencies
-- `README.md`: This documentation
-
-## Docker Usage
-
-### Building and Running
-
-1. **Build the image:**
-```bash
-docker build -t stable-diffusion-api .
-```
-
-2. **Run with Docker Compose (recommended):**
-```bash
-# Start the service
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop the service
-docker-compose down
-```
-
-3. **Run with Docker directly:**
-```bash
-# Basic run
-docker run --gpus all -p 8000:8000 stable-diffusion-api
-
-# With volume mounting for persistent outputs
-docker run --gpus all -p 8000:8000 \
-  -v $(pwd)/final_outputs:/app/final_outputs \
-  -v $(pwd)/upscaled_outputs:/app/upscaled_outputs \
-  stable-diffusion-api
-```
-
-### Docker Environment Variables
-
-You can customize the Docker container with environment variables:
-
-```bash
-docker run --gpus all -p 8000:8000 \
-  -e NVIDIA_VISIBLE_DEVICES=0 \
-  -e PYTHONUNBUFFERED=1 \
-  stable-diffusion-api
-```
-
-### Volume Mounts
-
-The Docker setup includes volume mounts for:
-- `/app/final_outputs` - Generated images
-- `/app/upscaled_outputs` - Upscaled images  
-- `/app/scheduler_outputs` - Scheduler comparison images
-- `/app/custom_upscaled` - Custom upscaled images
-
-## Local Usage
+**💡 For the complete documentation and advanced usage, please refer to [`docs/README.md`](docs/README.md)**
