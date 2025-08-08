@@ -42,11 +42,14 @@ RUN python3.12 -m ensurepip --upgrade && \
 # Set workdir
 WORKDIR /app
 
-# Copy requirements first for better caching
+# Copy requirements and installation scripts
 COPY requirements.txt /app/
+COPY install_dependencies.sh /app/
 
-# Install Python dependencies
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies with conflict resolution
+RUN chmod +x /app/install_dependencies.sh && \
+    python3 -m pip install --upgrade pip setuptools wheel && \
+    python3 -m pip install -r requirements.txt || /app/install_dependencies.sh
 
 # Copy all application files
 COPY . /app

@@ -1,0 +1,53 @@
+# Stable Diffusion Requirements - Dependency Conflict Free Version
+# This version removes packages that commonly cause conflicts in Docker builds
+
+# Core PyTorch (let it manage its own CUDA dependencies)
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio
+
+# Diffusion models and transformers
+diffusers>=0.20.0
+transformers>=4.30.0
+accelerate
+safetensors
+
+# Computer vision and image processing
+pillow
+opencv-python
+scikit-image
+imageio
+
+# Scientific computing (use compatible versions)
+numpy
+scipy
+matplotlib
+
+# FastAPI web framework
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+
+# Streamlit frontend
+streamlit
+
+# Core utilities
+requests
+tqdm
+pyyaml
+packaging
+filelock
+huggingface-hub
+tokenizers
+
+# Image enhancement (install separately if conflicts occur)
+# realesrgan
+# basicsr  
+# gfpgan
+
+# Remove these problematic packages:
+# - Fixed version pins that conflict with system packages
+# - NVIDIA CUDA packages (let PyTorch handle these)
+# - Packages that require distutils uninstall (blinker, etc.)
+# - Deprecated packages with legacy build systems

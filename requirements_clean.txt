@@ -1,0 +1,59 @@
+# Core AI/ML packages
+torch>=2.0.0
+torchvision>=0.15.0
+diffusers>=0.20.0
+transformers>=4.30.0
+accelerate
+
+# Image processing and computer vision
+pillow>=9.0.0
+opencv-python>=4.7.0
+scikit-image>=0.20.0
+imageio>=2.25.0
+
+# Scientific computing
+numpy>=1.24.0
+scipy>=1.10.0
+matplotlib>=3.6.0
+
+# Deep learning utilities
+safetensors>=0.3.0
+huggingface-hub>=0.16.0
+tokenizers>=0.13.0
+
+# FastAPI web framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+pydantic>=2.0.0
+python-multipart>=0.0.5
+
+# Streamlit frontend
+streamlit>=1.25.0
+
+# HTTP client
+requests>=2.28.0
+
+# Upscaling and enhancement
+realesrgan
+basicsr
+gfpgan
+
+# Utilities
+tqdm>=4.60.0
+pyyaml>=6.0
+packaging>=21.0
+filelock>=3.8.0
+
+# Optional: Only install if you need specific CUDA versions
+# nvidia-cublas-cu12
+# nvidia-cuda-cupti-cu12
+# nvidia-cuda-nvrtc-cu12
+# nvidia-cuda-runtime-cu12
+# nvidia-cudnn-cu12
+# nvidia-cufft-cu12
+# nvidia-curand-cu12
+# nvidia-cusolver-cu12
+# nvidia-cusparse-cu12
+# nvidia-nccl-cu12
+# nvidia-nvjitlink-cu12
+# nvidia-nvtx-cu12

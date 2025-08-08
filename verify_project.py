@@ -41,6 +41,8 @@ class ProjectVerifier:
             "image_upscaling.py",
             "imagegeneration_schedulers.py",
             "requirements.txt",
+            "install_dependencies.sh",
+            "fix_dependencies.sh", 
             "Dockerfile",
             "docker-compose.yml",
             "deploy.sh",
