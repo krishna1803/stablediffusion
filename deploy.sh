@@ -39,8 +39,33 @@ check_nvidia_docker() {
 # Function to build the Docker image
 build_image() {
     echo "Building Docker image: $IMAGE_NAME"
-    docker build -t $IMAGE_NAME .
-    echo "✓ Docker image built successfully"
+    
+    # Try building with the main Dockerfile
+    if docker build -t $IMAGE_NAME . 2>&1; then
+        echo "✓ Docker image built successfully"
+        return 0
+    else
+        echo "❌ Docker build failed with main Dockerfile"
+        echo "🔧 Trying troubleshooting..."
+        
+        # Check if troubleshooting script exists
+        if [ -f "docker_troubleshoot.sh" ]; then
+            echo "Running automatic troubleshooting..."
+            ./docker_troubleshoot.sh
+        else
+            echo "⚠️  Docker build failed. Please check:"
+            echo "   1. Internet connection"
+            echo "   2. Docker daemon is running"
+            echo "   3. NVIDIA CUDA image availability"
+            echo ""
+            echo "💡 Quick fixes:"
+            echo "   • Try: docker build --no-cache -t $IMAGE_NAME ."
+            echo "   • Or edit Dockerfile to use: FROM nvidia/cuda:11.8-runtime-ubuntu22.04"
+            echo "   • See DOCKER_BUILD_FIX.md for detailed solutions"
+            
+            return 1
+        fi
+    fi
 }
 
 # Function to run with docker-compose (recommended)

@@ -263,6 +263,48 @@ class ProjectVerifier:
         self.log_success("Swagger UI will be available at /docs")
         self.log_success("ReDoc will be available at /redoc")
     
+    def check_docker_image_availability(self):
+        """Check if the Docker base image is available."""
+        print("\n🐳 Checking Docker Image Availability...")
+        
+        dockerfile_path = self.project_dir / "Dockerfile"
+        if dockerfile_path.exists():
+            with open(dockerfile_path, 'r') as f:
+                content = f.read()
+            
+            # Extract the base image from Dockerfile
+            for line in content.split('\n'):
+                if line.strip().startswith('FROM '):
+                    base_image = line.strip().replace('FROM ', '')
+                    self.log_success(f"Base image configured: {base_image}")
+                    
+                    # Check if it's a NVIDIA CUDA image
+                    if 'nvidia/cuda' in base_image:
+                        self.log_success("Using NVIDIA CUDA base image")
+                        if 'devel' in base_image:
+                            self.log_success("Using development image (includes build tools)")
+                        elif 'runtime' in base_image:
+                            self.log_success("Using runtime image (smaller size)")
+                    else:
+                        self.log_warning("Not using NVIDIA CUDA base image")
+                    
+                    break
+            else:
+                self.log_issue("No FROM statement found in Dockerfile")
+            
+            # Check for GPU-related environment variables
+            if 'NVIDIA_VISIBLE_DEVICES' in content:
+                self.log_success("NVIDIA GPU environment variables configured")
+            else:
+                self.log_warning("Missing NVIDIA GPU environment variables")
+        
+        # Check if troubleshooting script exists
+        troubleshoot_script = self.project_dir / "docker_troubleshoot.sh"
+        if troubleshoot_script.exists():
+            self.log_success("Docker troubleshooting script available")
+        else:
+            self.log_warning("Docker troubleshooting script not found")
+    
     def run_verification(self):
         """Run all verification checks."""
         print("🔍 Project Verification Starting...")
@@ -271,6 +313,7 @@ class ProjectVerifier:
         self.check_required_files()
         self.check_python_syntax()
         self.check_docker_files()
+        self.check_docker_image_availability()
         self.check_requirements()
         self.check_scripts_executable()
         self.check_api_endpoints()

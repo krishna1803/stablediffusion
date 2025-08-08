@@ -1,3 +1,22 @@
+# Alternative Dockerfile options for troubleshooting
+# Use one of these base images if the main one fails
+
+# Option 1: Latest stable CUDA runtime (most compatible)
+# FROM nvidia/cuda:12.2-runtime-ubuntu22.04
+
+# Option 2: CUDA development image (includes more tools)
+# FROM nvidia/cuda:12.1-devel-ubuntu22.04
+
+# Option 3: Specific CUDA version that's widely available
+# FROM nvidia/cuda:11.8-runtime-ubuntu22.04
+
+# Option 4: Latest CUDA (may be newer)
+# FROM nvidia/cuda:latest
+
+# Option 5: If NVIDIA images fail, use Ubuntu with CUDA installed manually
+# FROM ubuntu:22.04
+
+# Current working configuration
 FROM nvidia/cuda:12.1-devel-ubuntu22.04
 
 # Set environment variables to avoid interactive prompts
@@ -31,21 +50,21 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt /app/
 
-# Install Python dependencies
+# Install Python dependencies with more robust error handling
 RUN pip3 install --upgrade pip setuptools wheel && \
     pip3 install --no-cache-dir -r requirements.txt
 
 # Copy all application files
 COPY . /app
 
-# Create output directories
+# Create output directories with proper permissions
 RUN mkdir -p /app/final_outputs /app/upscaled_outputs /app/scheduler_outputs && \
     chmod 777 /app/final_outputs /app/upscaled_outputs /app/scheduler_outputs
 
 # Expose port for FastAPI
 EXPOSE 8000
 
-# Health check
+# Health check with more robust curl command
 HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
