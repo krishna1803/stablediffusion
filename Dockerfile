@@ -17,7 +17,7 @@ RUN apt-get update && \
         python3.12 \
         python3.12-dev \
         python3.12-venv \
-        python3.12-distutils \
+        #python3.12-distutils \
         python3-pip \
         git \
         wget \
@@ -55,12 +55,12 @@ COPY . /app
 RUN mkdir -p /app/final_outputs /app/upscaled_outputs /app/scheduler_outputs && \
     chmod 777 /app/final_outputs /app/upscaled_outputs /app/scheduler_outputs
 
-# Expose port for FastAPI
-EXPOSE 8000
+# Expose ports for FastAPI and Streamlit
+EXPOSE 8000 8501
 
-# Health check
+# Health check (FastAPI)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the FastAPI service
-CMD ["python3", "fastapi_service.py"]
+# Run both FastAPI and Streamlit services
+CMD ["./start_studio.sh"]

@@ -4,6 +4,14 @@ This project provides a comprehensive FastAPI web service for generating images 
 
 ## Features
 
+### 🎨 **Streamlit Web Interface** (NEW!)
+- **User-Friendly UI**: Beautiful web interface for all features
+- **Real-Time Preview**: See generated images instantly
+- **Interactive Controls**: Sliders, dropdowns, and forms
+- **Gallery Management**: Browse and download all your creations
+- **Side-by-Side Comparisons**: Compare different schedulers visually
+
+### 🤖 **AI-Powered Image Generation**
 - **Automatic Model Selection**: Chooses the best Stable Diffusion model based on GPU memory:
   - ≤ 24 GB: Stable Diffusion 2.1
   - 24-48 GB: Stable Diffusion 3.5 Medium
@@ -13,8 +21,12 @@ This project provides a comprehensive FastAPI web service for generating images 
   - Directory batch upscaling
   - High-resolution upscaling (4x/8x)
 - **Scheduler Testing**: Compare 17+ different schedulers
+
+### 🛠️ **Developer-Friendly**
 - **RESTful API**: Easy-to-use REST endpoints
+- **Swagger UI**: Interactive API documentation
 - **Docker Support**: Containerized deployment
+- **Python 3.12**: Latest Python with optimized performance
 - **Comprehensive Testing**: Built-in test suite
 
 ## Quick Start (Docker - Recommended)
@@ -43,18 +55,33 @@ This project provides a comprehensive FastAPI web service for generating images 
 ### Manual Docker Steps
 
 ```bash
-# 1. Build and start with docker-compose
+# 1. Build and start with docker-compose (includes Streamlit UI)
 docker-compose up -d
 
 # 2. Or build and run with Docker directly
-docker build -t stable-diffusion-api .
-docker run --gpus all -p 8000:8000 -v $(pwd)/final_outputs:/app/final_outputs stable-diffusion-api
+docker build -t stable-diffusion-studio .
+docker run --gpus all -p 8000:8000 -p 8501:8501 -v $(pwd)/final_outputs:/app/final_outputs stable-diffusion-studio
 
-# 3. Test the deployment
+# 3. Access the services
+# Streamlit UI: http://localhost:8501 (recommended)
+# FastAPI + Swagger: http://localhost:8000/docs
+
+# 4. Test the deployment
 python3 test_api.py
 
-# 4. Test Python 3.12 configuration (optional)
+# 5. Test Python 3.12 configuration (optional)
 docker exec -it <container_name> python3 test_python_version.py
+```
+
+### Local Development (No Docker)
+
+```bash
+# Start both services locally
+./run_local.sh
+
+# Or manually:
+python3 fastapi_service.py &  # Backend on port 8000
+streamlit run streamlit_app.py  # Frontend on port 8501
 ```
 
 ## Installation Options

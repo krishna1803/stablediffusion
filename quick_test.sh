@@ -45,18 +45,23 @@ if ! curl -s http://localhost:8000/health > /dev/null 2>&1; then
 fi
 
 echo ""
-echo "🎉 Service is running! Here are your testing options:"
+echo "🎉 Stable Diffusion Studio is ready!"
+echo "====================================="
 echo ""
-echo "📖 Interactive API Documentation:"
+echo "🌐 **Streamlit Web UI (Recommended):**"
+echo "   Main Interface: http://localhost:8501"
+echo ""
+echo "📖 **Developer API Documentation:**"
 echo "   Swagger UI: http://localhost:8000/docs"
 echo "   ReDoc:      http://localhost:8000/redoc"
+echo "   FastAPI:    http://localhost:8000"
 echo ""
-echo "🧪 Testing Tools:"
+echo "🧪 **Testing Tools:**"
 echo "   Interactive Helper: python3 swagger_tester.py"
 echo "   Automated Tests:    python3 test_api.py"
 echo "   Usage Examples:     python3 example_usage.py"
 echo ""
-echo "🔗 Quick Links:"
+echo "🔗 **Quick Links:**"
 echo "   Health Check:       http://localhost:8000/health"
 echo "   Available Files:    http://localhost:8000/files"
 echo "   Available Schedulers: http://localhost:8000/schedulers"
@@ -64,18 +69,29 @@ echo ""
 
 # Ask user what they want to do
 echo "🎯 What would you like to do?"
-echo "1. Open Swagger UI in browser"
-echo "2. Run interactive testing helper"
-echo "3. Run automated tests"
-echo "4. Show service logs"
-echo "5. Just show me the URLs"
-echo "6. Test Python 3.12 configuration"
+echo "1. Open Streamlit UI in browser (recommended)"
+echo "2. Open Swagger UI in browser"
+echo "3. Run interactive testing helper"
+echo "4. Run automated tests"
+echo "5. Show service logs"
+echo "6. Just show me the URLs"
+echo "7. Test Python 3.12 configuration"
 
-read -p "Enter your choice (1-6): " choice
+read -p "Enter your choice (1-7): " choice
 
 case $choice in
     1)
-        echo "🌐 Opening Swagger UI..."
+        echo "� Opening Streamlit UI..."
+        if command -v open &> /dev/null; then
+            open http://localhost:8501
+        elif command -v xdg-open &> /dev/null; then
+            xdg-open http://localhost:8501
+        else
+            echo "Please manually open: http://localhost:8501"
+        fi
+        ;;
+    2)
+        echo "�🌐 Opening Swagger UI..."
         if command -v open &> /dev/null; then
             open http://localhost:8000/docs
         elif command -v xdg-open &> /dev/null; then
@@ -84,15 +100,15 @@ case $choice in
             echo "Please manually open: http://localhost:8000/docs"
         fi
         ;;
-    2)
+    3)
         echo "🧪 Starting interactive testing helper..."
         python3 swagger_tester.py
         ;;
-    3)
+    4)
         echo "🔍 Running automated tests..."
         python3 test_api.py
         ;;
-    4)
+    5)
         echo "📋 Service logs:"
         if [ -f "docker-compose.yml" ]; then
             docker-compose logs --tail=50
@@ -100,10 +116,10 @@ case $choice in
             ./deploy.sh logs
         fi
         ;;
-    5)
+    6)
         echo "👍 URLs are displayed above. Happy testing!"
         ;;
-    6)
+    7)
         echo "🐍 Testing Python 3.12 configuration..."
         # Get container name
         CONTAINER_NAME=$(docker ps --format "table {{.Names}}" | grep -E "(stable|diffusion)" | head -1)

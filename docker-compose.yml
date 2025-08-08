@@ -1,10 +1,11 @@
 version: '3.8'
 
 services:
-  stable-diffusion-api:
+  stable-diffusion-studio:
     build: .
     ports:
-      - "8000:8000"
+      - "8000:8000"  # FastAPI Backend
+      - "8501:8501"  # Streamlit Frontend
     volumes:
       - "./final_outputs:/app/final_outputs"
       - "./upscaled_outputs:/app/upscaled_outputs"

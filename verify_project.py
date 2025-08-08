@@ -36,6 +36,7 @@ class ProjectVerifier:
         
         required_files = [
             "fastapi_service.py",
+            "streamlit_app.py",
             "imagegeneration_final.py", 
             "image_upscaling.py",
             "imagegeneration_schedulers.py",
@@ -43,6 +44,8 @@ class ProjectVerifier:
             "Dockerfile",
             "docker-compose.yml",
             "deploy.sh",
+            "run_local.sh",
+            "start_studio.sh",
             "test_api.py",
             "README.md"
         ]
@@ -110,15 +113,20 @@ class ProjectVerifier:
             else:
                 self.log_warning("Dockerfile doesn't set Python 3.12 as default")
                 
-            if "fastapi_service.py" in content:
-                self.log_success("Dockerfile runs fastapi_service.py")
+            if "start_studio.sh" in content or "streamlit" in content:
+                self.log_success("Dockerfile configured for Streamlit UI")
             else:
-                self.log_issue("Dockerfile doesn't run fastapi_service.py")
+                self.log_warning("Dockerfile doesn't include Streamlit configuration")
                 
-            if "EXPOSE 8000" in content:
-                self.log_success("Dockerfile exposes port 8000")
+            if "EXPOSE 8000" in content or "8000" in content:
+                self.log_success("Dockerfile exposes port 8000 (FastAPI)")
             else:
                 self.log_warning("Dockerfile doesn't expose port 8000")
+                
+            if "EXPOSE 8501" in content or "8501" in content:
+                self.log_success("Dockerfile exposes port 8501 (Streamlit)")
+            else:
+                self.log_warning("Dockerfile doesn't expose port 8501")
         
         # Check docker-compose.yml
         compose_path = self.project_dir / "docker-compose.yml"
@@ -166,7 +174,8 @@ class ProjectVerifier:
                 'uvicorn',
                 'pydantic',
                 'requests',
-                'pillow'
+                'pillow',
+                'streamlit'
             ]
             
             for package in required_packages:

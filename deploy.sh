@@ -9,9 +9,10 @@ echo "Stable Diffusion API - Docker Deploy"
 echo "======================================"
 
 # Configuration
-IMAGE_NAME="stable-diffusion-api"
-CONTAINER_NAME="stable-diffusion-api"
-PORT="8000"
+IMAGE_NAME="stable-diffusion-studio"
+CONTAINER_NAME="stable-diffusion-studio"
+API_PORT="8000"
+UI_PORT="8501"
 
 # Function to check if Docker is installed
 check_docker() {
@@ -73,8 +74,14 @@ run_with_compose() {
     echo "Starting with docker-compose..."
     docker-compose up -d
     echo "✓ Service started with docker-compose"
-    echo "API available at: http://localhost:$PORT"
-    echo "API docs at: http://localhost:$PORT/docs"
+    echo ""
+    echo "🎉 Stable Diffusion Studio is ready!"
+    echo "======================================"
+    echo "🌐 Streamlit UI:     http://localhost:$UI_PORT"
+    echo "📡 FastAPI Backend:  http://localhost:$API_PORT"
+    echo "📚 API Docs:         http://localhost:$API_PORT/docs"
+    echo ""
+    echo "💡 Use the Streamlit interface for the best experience!"
 }
 
 # Function to run with Docker directly
@@ -92,15 +99,22 @@ run_with_docker() {
     docker run -d \
         --name $CONTAINER_NAME \
         --gpus all \
-        -p $PORT:$PORT \
+        -p $API_PORT:$API_PORT \
+        -p $UI_PORT:$UI_PORT \
         -v $(pwd)/final_outputs:/app/final_outputs \
         -v $(pwd)/upscaled_outputs:/app/upscaled_outputs \
         -v $(pwd)/scheduler_outputs:/app/scheduler_outputs \
         $IMAGE_NAME
     
     echo "✓ Container started: $CONTAINER_NAME"
-    echo "API available at: http://localhost:$PORT"
-    echo "API docs at: http://localhost:$PORT/docs"
+    echo ""
+    echo "🎉 Stable Diffusion Studio is ready!"
+    echo "======================================"
+    echo "🌐 Streamlit UI:     http://localhost:$UI_PORT"
+    echo "📡 FastAPI Backend:  http://localhost:$API_PORT"
+    echo "📚 API Docs:         http://localhost:$API_PORT/docs"
+    echo ""
+    echo "💡 Use the Streamlit interface for the best experience!"
 }
 
 # Function to show logs
@@ -134,7 +148,7 @@ test_deployment() {
     sleep 10
     
     # Test health endpoint
-    if curl -f http://localhost:$PORT/health > /dev/null 2>&1; then
+    if curl -f http://localhost:$API_PORT/health > /dev/null 2>&1; then
         echo "✓ Health check passed"
     else
         echo "✗ Health check failed"
@@ -143,7 +157,7 @@ test_deployment() {
     
     # Test generate endpoint with a simple request
     echo "Testing image generation..."
-    curl -X POST "http://localhost:$PORT/generate" \
+    curl -X POST "http://localhost:$API_PORT/generate" \
          -H "Content-Type: application/json" \
          -d '{
              "prompt": "a simple test image, digital art",
