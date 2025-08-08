@@ -93,4 +93,4 @@ python-multipart==0.0.17
 requests==2.32.4
 
 # Streamlit frontend
-streamlit==1.39.0
+streamlit==1.48.0
