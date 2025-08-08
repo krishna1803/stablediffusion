@@ -25,6 +25,14 @@ This project provides a comprehensive FastAPI web service for generating images 
 - Docker with NVIDIA Container Toolkit
 - At least 8GB GPU memory (16GB+ recommended)
 
+### Technical Specifications
+
+- **Base Image**: `nvidia/cuda:12.2.0-runtime-ubuntu22.04`
+- **Python Version**: Python 3.12 (installed via deadsnakes PPA)
+- **CUDA Support**: CUDA 12.2 runtime
+- **GPU Memory**: Automatic model selection based on available VRAM
+- **Container Port**: 8000 (FastAPI + Swagger UI)
+
 ### One-Command Deployment
 
 ```bash
@@ -44,6 +52,9 @@ docker run --gpus all -p 8000:8000 -v $(pwd)/final_outputs:/app/final_outputs st
 
 # 3. Test the deployment
 python3 test_api.py
+
+# 4. Test Python 3.12 configuration (optional)
+docker exec -it <container_name> python3 test_python_version.py
 ```
 
 ## Installation Options

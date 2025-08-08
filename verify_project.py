@@ -100,6 +100,16 @@ class ProjectVerifier:
             else:
                 self.log_warning("Dockerfile doesn't use NVIDIA CUDA base image")
                 
+            if "python3.12" in content:
+                self.log_success("Dockerfile installs Python 3.12")
+            else:
+                self.log_warning("Dockerfile doesn't explicitly install Python 3.12")
+                
+            if "update-alternatives" in content and "python3.12" in content:
+                self.log_success("Dockerfile sets Python 3.12 as default")
+            else:
+                self.log_warning("Dockerfile doesn't set Python 3.12 as default")
+                
             if "fastapi_service.py" in content:
                 self.log_success("Dockerfile runs fastapi_service.py")
             else:

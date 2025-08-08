@@ -69,8 +69,9 @@ echo "2. Run interactive testing helper"
 echo "3. Run automated tests"
 echo "4. Show service logs"
 echo "5. Just show me the URLs"
+echo "6. Test Python 3.12 configuration"
 
-read -p "Enter your choice (1-5): " choice
+read -p "Enter your choice (1-6): " choice
 
 case $choice in
     1)
@@ -101,6 +102,17 @@ case $choice in
         ;;
     5)
         echo "👍 URLs are displayed above. Happy testing!"
+        ;;
+    6)
+        echo "🐍 Testing Python 3.12 configuration..."
+        # Get container name
+        CONTAINER_NAME=$(docker ps --format "table {{.Names}}" | grep -E "(stable|diffusion)" | head -1)
+        if [ -n "$CONTAINER_NAME" ]; then
+            echo "Testing in container: $CONTAINER_NAME"
+            docker exec $CONTAINER_NAME python3 test_python_version.py
+        else
+            echo "❌ No running container found. Please start the service first."
+        fi
         ;;
     *)
         echo "👍 No problem! All URLs are displayed above."

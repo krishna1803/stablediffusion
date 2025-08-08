@@ -1,9 +1,17 @@
 # 🐳 Docker Build Fix Guide
 
+## Current Configuration
+
+Your Dockerfile is now configured with:
+- **Base Image**: `nvidia/cuda:12.2.0-runtime-ubuntu22.04`  
+- **Python Version**: Python 3.12 (installed via deadsnakes PPA)
+- **Default Python**: Set to Python 3.12 via update-alternatives
+- **GPU Support**: Full NVIDIA CUDA 12.2 runtime
+
 ## The Error You're Seeing
 
 ```bash
-ERROR [internal] load metadata for docker.io/nvidia/cuda:12.1-runtime-ubuntu22.04
+ERROR [internal] load metadata for docker.io/nvidia/cuda:12.2.0-runtime-ubuntu22.04
 ```
 
 This error occurs when:
@@ -14,11 +22,22 @@ This error occurs when:
 
 ## ✅ Solutions (Try in Order)
 
-### Solution 1: Updated Dockerfile (Recommended)
+### Solution 1: Current Dockerfile (Recommended)
 
-I've updated your Dockerfile with a more reliable image. Use the current `Dockerfile` which now uses:
+Your Dockerfile is already optimized with:
 ```dockerfile
-FROM nvidia/cuda:12.1-devel-ubuntu22.04
+FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+
+# Python 3.12 installation
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.12 python3.12-dev python3.12-venv python3.12-distutils
+
+# Set Python 3.12 as default
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
 ```
 
 ### Solution 2: Alternative CUDA Images

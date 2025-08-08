@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1-devel-ubuntu22.04
+FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
 # Set environment variables to avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
@@ -6,12 +6,19 @@ ENV PYTHONUNBUFFERED=1
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
-# Install system dependencies
+# Install system dependencies and Python 3.12
 RUN apt-get update && \
     apt-get install -y \
-        python3 \
+        software-properties-common \
+        && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y \
+        python3.12 \
+        python3.12-dev \
+        python3.12-venv \
+        python3.12-distutils \
         python3-pip \
-        python3-venv \
         git \
         wget \
         curl \
@@ -21,9 +28,16 @@ RUN apt-get update && \
         libxrender-dev \
         libgomp1 \
         libgl1-mesa-glx \
-        libglib2.0-0 \
         && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3.12 as default python3 and python
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+
+# Install pip for Python 3.12
+RUN python3.12 -m ensurepip --upgrade && \
+    python3.12 -m pip install --upgrade pip setuptools wheel
 
 # Set workdir
 WORKDIR /app
@@ -32,8 +46,7 @@ WORKDIR /app
 COPY requirements.txt /app/
 
 # Install Python dependencies
-RUN pip3 install --upgrade pip setuptools wheel && \
-    pip3 install --no-cache-dir -r requirements.txt
+RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
 # Copy all application files
 COPY . /app
