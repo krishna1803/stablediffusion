@@ -84,3 +84,10 @@ Werkzeug==3.1.3
 wheel==0.45.1
 yapf==0.43.0
 zipp==3.23.0
+
+# FastAPI dependencies
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+python-multipart==0.0.17
+requests==2.32.4

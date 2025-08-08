@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  stable-diffusion-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./final_outputs:/app/final_outputs"
+      - "./upscaled_outputs:/app/upscaled_outputs"
+      - "./scheduler_outputs:/app/scheduler_outputs"
+      - "./custom_upscaled:/app/custom_upscaled"
+      - "./quality_comparison:/app/quality_comparison"
+      - "./speed_comparison:/app/speed_comparison"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
