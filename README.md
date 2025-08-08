@@ -251,6 +251,35 @@ curl http://localhost:8000/schedulers
 
 Visit http://localhost:8000/docs for the interactive Swagger UI where you can test all endpoints.
 
+## 🎨 Testing with Swagger UI (Recommended)
+
+Your FastAPI service includes interactive API documentation with Swagger UI - **the easiest way to test your API**!
+
+### Quick Start
+```bash
+# Deploy and open testing interface
+./quick_test.sh
+
+# Or manually:
+./deploy.sh deploy
+# Then open: http://localhost:8000/docs
+```
+
+### Interactive Testing
+- **Swagger UI**: http://localhost:8000/docs - Interactive API testing
+- **ReDoc**: http://localhost:8000/redoc - Alternative documentation
+- **Testing Helper**: `python3 swagger_tester.py` - Menu-driven testing
+
+### Why Use Swagger UI?
+✅ **Visual Interface** - No need to write curl commands  
+✅ **Live Testing** - Execute API calls directly from the browser  
+✅ **Schema Validation** - See parameter types and constraints  
+✅ **Real-time Responses** - View results immediately  
+✅ **File Downloads** - Download generated images directly  
+✅ **Copy Curl Commands** - Get curl equivalents for your code  
+
+See [SWAGGER_UI_GUIDE.md](SWAGGER_UI_GUIDE.md) for detailed usage instructions.
+
 ## Configuration
 
 ### Environment Variables

@@ -276,7 +276,6 @@ class ProjectVerifier:
         self.check_api_endpoints()
         self.check_swagger_ui()
         self.check_output_directories()
-        self.check_swagger_ui()
         
         print("\n" + "=" * 50)
         print("📋 VERIFICATION SUMMARY")
