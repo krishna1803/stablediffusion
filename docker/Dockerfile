@@ -48,7 +48,7 @@ WORKDIR /app
 
 # Copy all application files first (so requirements file exists regardless of location)
 COPY . /app
-COPY config/requirements.txt /app/
+
 
 # Install Python dependencies in the virtual environment
 RUN pip install --no-cache-dir -r /app/requirements.txt
