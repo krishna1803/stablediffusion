@@ -49,9 +49,15 @@ class StableDiffusionUI:
         try:
             response = requests.get(f"{self.api_base}/files")
             if response.status_code == 200:
-                return response.json().get("files", [])
-        except:
-            pass
+                data = response.json()
+                files = data.get("files", [])
+                # Ensure we return a list of strings
+                if isinstance(files, list):
+                    return [str(f) for f in files if f]
+                else:
+                    return []
+        except Exception as e:
+            st.error(f"Error fetching files: {e}")
         return []
     
     def generate_image(self, params: Dict[str, Any]):
@@ -353,26 +359,59 @@ def compare_schedulers_tab(ui):
             with st.spinner(f"🔍 Comparing {len(selected_schedulers)} schedulers..."):
                 result = ui.test_schedulers(params)
             
-            if result and "generated_files" in result:
-                st.success(f"✅ Generated {len(result['generated_files'])} comparison images")
+            if result:
+                st.success(f"✅ Scheduler comparison completed!")
                 
-                # Display comparison results
-                st.subheader("📊 Comparison Results")
-                cols = st.columns(min(3, len(result['generated_files'])))
-                
-                for i, file_info in enumerate(result['generated_files']):
-                    with cols[i % len(cols)]:
-                        st.markdown(f"**{file_info['scheduler']}**")
-                        img = ui.download_image(file_info['filename'])
-                        if img:
-                            st.image(img, use_column_width=True)
-                            st.download_button(
-                                f"⬇️ Download",
-                                data=download_image_bytes(ui, file_info['filename']),
-                                file_name=file_info['filename'],
-                                mime="image/png",
-                                key=f"download_{i}"
-                            )
+                # The actual API returns a dict with scheduler names as keys and file paths as values
+                # Extract filenames from the full paths
+                if isinstance(result, dict):
+                    st.subheader("📊 Comparison Results")
+                    
+                    # Handle different possible response formats
+                    files_dict = {}
+                    if "results" in result:
+                        files_dict = result["results"]
+                    elif "generated_files" in result:
+                        # If it's the expected format
+                        files_dict = {item["scheduler"]: item["filename"] for item in result["generated_files"]}
+                    else:
+                        # If the result itself is the files dict
+                        files_dict = result
+                    
+                    if files_dict:
+                        # Display images in columns
+                        num_cols = min(3, len(files_dict))
+                        cols = st.columns(num_cols)
+                        
+                        for i, (scheduler_name, file_path) in enumerate(files_dict.items()):
+                            with cols[i % num_cols]:
+                                st.markdown(f"**{scheduler_name}**")
+                                
+                                # Extract filename from path if needed
+                                filename = file_path
+                                if "/" in file_path:
+                                    filename = file_path.split("/")[-1]
+                                
+                                # Try to download and display the image
+                                img = ui.download_image(filename)
+                                if img:
+                                    st.image(img, use_column_width=True)
+                                    st.download_button(
+                                        f"⬇️ Download",
+                                        data=download_image_bytes(ui, filename),
+                                        file_name=filename,
+                                        mime="image/png",
+                                        key=f"download_{scheduler_name}_{i}"
+                                    )
+                                else:
+                                    st.error(f"Could not load image: {filename}")
+                                    st.text(f"Full path: {file_path}")
+                    else:
+                        st.error("No images found in response")
+                        st.json(result)  # Debug: show the actual response
+                else:
+                    st.error("Unexpected response format")
+                    st.json(result)  # Debug: show the actual response
             else:
                 st.error("Failed to generate comparison images")
     
@@ -487,8 +526,13 @@ def file_management_tab(ui):
     
     files = ui.get_available_files()
     
-    if not files:
+    # Handle case where files might not be a list or might be None
+    if not files or not isinstance(files, list):
         st.info("No images generated yet. Create some images first!")
+        return
+    
+    if len(files) == 0:
+        st.info("No images available. Generate some images first!")
         return
     
     st.markdown(f"**📊 Total files: {len(files)}**")
@@ -498,7 +542,7 @@ def file_management_tab(ui):
     
     # Pagination
     items_per_page = 6
-    total_pages = (len(files) - 1) // items_per_page + 1
+    total_pages = max(1, (len(files) - 1) // items_per_page + 1)
     
     if total_pages > 1:
         page = st.selectbox("📄 Page:", range(1, total_pages + 1)) - 1
@@ -507,28 +551,39 @@ def file_management_tab(ui):
     
     start_idx = page * items_per_page
     end_idx = min(start_idx + items_per_page, len(files))
+    
+    # Ensure we don't go out of bounds
+    if start_idx >= len(files):
+        st.error("Page out of range")
+        return
+        
     current_files = files[start_idx:end_idx]
     
     # Display images in grid
     cols = st.columns(3)
     for i, filename in enumerate(current_files):
         with cols[i % 3]:
-            img = ui.download_image(filename)
-            if img:
-                st.image(img, caption=filename, use_column_width=True)
-                
-                col_btn1, col_btn2 = st.columns(2)
-                with col_btn1:
-                    if st.button(f"🔍 View", key=f"view_{filename}"):
-                        display_image_details(ui, filename)
-                with col_btn2:
-                    st.download_button(
-                        "⬇️ Download",
-                        data=download_image_bytes(ui, filename),
-                        file_name=filename,
-                        mime="image/png",
-                        key=f"download_{filename}"
-                    )
+            try:
+                img = ui.download_image(filename)
+                if img:
+                    st.image(img, caption=filename, use_column_width=True)
+                    
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1:
+                        if st.button(f"🔍 View", key=f"view_{filename}"):
+                            display_image_details(ui, filename)
+                    with col_btn2:
+                        st.download_button(
+                            "⬇️ Download",
+                            data=download_image_bytes(ui, filename),
+                            file_name=filename,
+                            mime="image/png",
+                            key=f"download_{filename}"
+                        )
+                else:
+                    st.error(f"Could not load image: {filename}")
+            except Exception as e:
+                st.error(f"Error displaying {filename}: {str(e)}")
 
 def about_tab():
     """About and help information."""
