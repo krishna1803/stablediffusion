@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04
 
 # Set environment variables to avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
@@ -8,30 +8,19 @@ ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
 # Install system dependencies and Python 3.12
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
         software-properties-common \
-        && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y \
-        python3.12 \
-        python3.12-dev \
-        python3.12-venv \
-        git \
-        wget \
         curl \
-        libglib2.0-0 \
-        libsm6 \
-        libxext6 \
-        libxrender-dev \
-        libgomp1 \
-        libgl1-mesa-glx \
+        git \
+        ca-certificates \
+        python3.12 \
+        python3.12-venv \
+        python3.12-distutils \
         && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*
 
-# Set Python 3.12 as default python3 and python
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+# Set workdir
+WORKDIR /app
 
 # Create Python 3.12 virtual environment
 RUN python3.12 -m venv /opt/venv
@@ -43,21 +32,18 @@ RUN /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel
 ENV PATH="/opt/venv/bin:$PATH"
 ENV VIRTUAL_ENV="/opt/venv"
 
-# Set workdir
-WORKDIR /app
-
-# Copy requirements file
-COPY config/requirements.txt /app/
-
 # Install Python dependencies in virtual environment
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt \
+    && pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu118 \
+        torch torchvision
 
 # Copy all application files
 COPY . /app
 
-# Create output directories
-RUN mkdir -p /app/final_outputs /app/upscaled_outputs /app/scheduler_outputs && \
-    chmod 777 /app/final_outputs /app/upscaled_outputs /app/scheduler_outputs
+# Start script (FastAPI + optional Streamlit)
+COPY docker/start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Expose ports for FastAPI and Streamlit
 EXPOSE 8000 8501
@@ -67,4 +53,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run both FastAPI and Streamlit services
-CMD ["./scripts/start_studio.sh"]
+CMD ["/app/start.sh"]

@@ -50,83 +50,45 @@ def generate_image(
     upscale: bool = False,
     upscale_prompt: Optional[str] = None
 ) -> str:
-    """
-    Generate an image using Stable Diffusion.
-    
-    Args:
-        prompt: Text prompt for image generation
-        output_file: Name of the output file (with extension)
-        negative_prompt: Negative prompt to avoid unwanted features
-        num_inference_steps: Number of denoising steps
-        guidance_scale: Guidance scale for prompt adherence
-        height: Image height in pixels
-        width: Image width in pixels
-        output_dir: Directory to save the output image
-        upscale: Whether to upscale the generated image
-        upscale_prompt: Prompt for upscaling (if None, uses the original prompt)
-    
-    Returns:
-        str: Path to the saved image (upscaled if requested)
-    """
     global _pipe
-    
-    # Initialize pipeline if not already done
     if _pipe is None:
         initialize_pipeline()
-    
-    # Ensure output folder exists
+
     os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, output_file)
-    
-    # Generate image
-    image = _pipe(
+
+    result = _pipe(
         prompt=prompt,
         negative_prompt=negative_prompt,
         num_inference_steps=num_inference_steps,
         guidance_scale=guidance_scale,
         height=height,
         width=width
-    ).images[0]
-    
-    # Save image
+    )
+    image = result.images[0]
+    output_path = os.path.join(output_dir, output_file)
     image.save(output_path)
-    print(f"Image saved to {output_path}")
-    
-    # Upscale if requested
+
     if upscale:
         try:
             from image_upscaling import upscale_image
-            upscale_prompt_text = upscale_prompt if upscale_prompt else prompt
-            
-            # Generate upscaled filename
-            base_name = os.path.splitext(output_file)[0]
-            upscaled_filename = f"{base_name}_upscaled.png"
-            
-            upscaled_path = upscale_image(
+            up_prompt = upscale_prompt or prompt
+            output_path = upscale_image(
                 input_file=output_path,
-                prompt=upscale_prompt_text,
-                output_file=upscaled_filename,
-                output_dir=output_dir
+                prompt=up_prompt,
+                output_dir="upscaled_outputs"
             )
-            print(f"Upscaled image saved to {upscaled_path}")
-            return upscaled_path
-        except ImportError:
-            print("Warning: Could not import upscaling module. Returning original image.")
         except Exception as e:
-            print(f"Warning: Upscaling failed: {e}. Returning original image.")
-    
+            print(f"Upscale failed, returning base image: {e}")
+
     return output_path
 
 def main():
     """Main function for command-line usage."""
-    # Get the prompt and output file name from command-line arguments
     if len(sys.argv) < 3:
-        print("Usage: python imagegeneration_final.py <prompt> <output_file>")
+        print("Usage: python imagegeneration_final.py \"<prompt>\" <output_file>")
         sys.exit(1)
-    
     prompt = sys.argv[1]
     output_file = sys.argv[2]
-    
     try:
         output_path = generate_image(prompt, output_file)
         print(f"Image generation completed successfully: {output_path}")
