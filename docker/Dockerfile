@@ -47,7 +47,7 @@ ENV VIRTUAL_ENV="/opt/venv"
 WORKDIR /app
 
 # Copy requirements file
-COPY config/requirements.txt /app/
+COPY ./config/requirements.txt /app/
 
 # Install Python dependencies in virtual environment
 RUN pip install --no-cache-dir -r requirements.txt
