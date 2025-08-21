@@ -46,14 +46,19 @@ ENV VIRTUAL_ENV="/opt/venv"
 # Set workdir
 WORKDIR /app
 
-# Copy requirements file
-COPY ./config/requirements.txt /app/
-
-# Install Python dependencies in virtual environment
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy all application files
+# Copy all application files first (so requirements file exists regardless of location)
 COPY . /app
+
+# Install Python dependencies in the virtual environment
+# Prefer config/requirements.txt, fallback to project-root requirements.txt
+RUN set -e; \
+    if [ -f /app/config/requirements.txt ]; then \
+        pip install --no-cache-dir -r /app/config/requirements.txt; \
+    elif [ -f /app/requirements.txt ]; then \
+        pip install --no-cache-dir -r /app/requirements.txt; \
+    else \
+        echo "requirements.txt not found in /app/config or /app" && exit 1; \
+    fi
 
 # Create output directories
 RUN mkdir -p /app/final_outputs /app/upscaled_outputs /app/scheduler_outputs && \
@@ -66,5 +71,8 @@ EXPOSE 8000 8501
 HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run both FastAPI and Streamlit services
+
+
+
+CMD ["./scripts/start_studio.sh"]# Run both FastAPI and Streamlit services# Run both FastAPI and Streamlit services
 CMD ["./scripts/start_studio.sh"]
