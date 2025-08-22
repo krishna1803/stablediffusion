@@ -1,41 +1,37 @@
-FROM nvidia/cuda:12.9-runtime-oraclelinux8
+FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
 # Set environment variables to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
 # Install system dependencies and Python 3.12
-RUN dnf update -y && \
-    dnf install -y \
-        epel-release \
-        oracle-epel-release-el8 && \
-    dnf update -y && \
-    dnf install -y \
+RUN apt-get update && \
+    apt-get install -y \
+        software-properties-common \
+        && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y \
         python3.12 \
-        python3.12-devel \
-        python3.12-pip \
+        python3.12-dev \
+        python3.12-venv \
         git \
         wget \
         curl \
-        gcc \
-        gcc-c++ \
-        make \
-        cmake \
-        glib2-devel \
-        libSM \
-        libXext \
-        libXrender \
-        libgomp \
-        mesa-libGL \
-        which \
+        libglib2.0-0 \
+        libsm6 \
+        libxext6 \
+        libxrender-dev \
+        libgomp1 \
+        libgl1-mesa-glx \
         && \
-    dnf clean all
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Create symbolic links for python3.12
-RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
-    alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
-    alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.12 1
+# Set Python 3.12 as default python3 and python
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
 
 # Create Python 3.12 virtual environment
 RUN python3.12 -m venv /opt/venv
@@ -50,8 +46,11 @@ ENV VIRTUAL_ENV="/opt/venv"
 # Set workdir
 WORKDIR /app
 
-# Copy all application files first
+# Copy all application files first (so requirements file exists regardless of location)
 COPY . /app
+
+COPY config/requirements.txt /app/
+
 
 # Install Python dependencies in the virtual environment
 RUN pip install --no-cache-dir -r /app/requirements.txt
